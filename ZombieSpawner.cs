@@ -105,7 +105,7 @@ public class ZombieSpawner : MonoBehaviour
             {
                 drumstickSfx[i].PlayScheduled(AudioSettings.dspTime + FirstNoteOffset - (i * beatLength) + GLOBAL_AUDIO_DELAY);
             }
-            // chedule count-off for the four bars before the first note plays
+            // schedule count-off for the four bars before the first note plays
         }
     }
 }

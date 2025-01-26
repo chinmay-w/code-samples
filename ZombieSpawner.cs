@@ -51,17 +51,13 @@ public class ZombieSpawner : MonoBehaviour
         drumstickSfx = transform.GetChild(0).GetComponents<AudioSource>();
     }
 
-    // Coroutine to play the song on a given delay
-    // Basically just sleeps and marks the song as started
-    // Important elsewhere for populating the scene properly and handling pre/post song events
-    IEnumerator trackSongStart(float delay) 
+    IEnumerator trackSongStart(float delay) // coroutine
     {
         yield return new WaitForSeconds(delay); 
         songStarted = true;
     }
 
-    // We cannot use Unity's Start OR Awake functions to implement any musical logic because of the stutter caused 
-    // when loading in all the assets for the level
+    // We cannot use Unity's Start OR Awake functions to implement musical logic because of the loading stutter
     // Instead, we created a custom third pass once loading is complete (before that we throw up a loading screen)
     // In 'LoadingBlocker.cs': GameObject.Find("Level").BroadcastMessage("InitAfterLoad"); 
     // which runs InitAfterLoad() on all objects synchronously (if it exists)
@@ -89,11 +85,8 @@ public class ZombieSpawner : MonoBehaviour
 
         if (FirstNoteOffset < COUNT_OFF_REPS * beatLength) // handles the case where the beatmap starts < 4 beats into the song
         {
-            // Unity's AudioSource.PlayScheduled() method plays songs at a far more precise time than either Play() or PlayDelayed()
-            // This is because it has time to preload the audio files
-            // AudioSettings.dspTime is a far more accurate time measurement than Time.time
-            // Of note - dspTime is not frame-rate dependent, which makes it ideal for synchronizing post loading screen 
-            // (which is when our frame rate can dip)
+            // AudioSource.PlayScheduled() plays songs at a far more precise time than either Play() or PlayDelayed()
+            // AudioSettings.dspTime is a far more accurate timer than Time.time
             for (int i = 0; i < COUNT_OFF_REPS; i++) {
                 drumstickSfx[i].PlayScheduled(AudioSettings.dspTime + i * beatLength + GLOBAL_AUDIO_DELAY);
             }

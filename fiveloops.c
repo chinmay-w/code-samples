@@ -192,8 +192,6 @@ void oneloop( int m, int n, int k, double *At, double *Bt, double *C, int rsC, i
     __m256d alpha_0123_p, beta_p_j;
 
     // We load the current contents of C into our registers
-    // This is what makes the math work out even when subdividing the matrices like this
-    // C now contains a "partial result" that is reused for later microkernel runs
     gamma_0123_0 = _mm256_loadu_pd( &gamma(0, 0) ) ;
     gamma_0123_1 = _mm256_loadu_pd( &gamma(0, 1) ) ;
     gamma_0123_2 = _mm256_loadu_pd( &gamma(0, 2) ) ;
@@ -221,17 +219,12 @@ void oneloop( int m, int n, int k, double *At, double *Bt, double *C, int rsC, i
       mpB += NR;
   }
 
-
   // stores the partial result to memory
+  // This is what makes the math work out even when subdividing the matrices like this
+  // C now contains a "partial result" that is reused for later microkernel runs
   _mm256_storeu_pd( &gamma(0,0), gamma_0123_0 );
   _mm256_storeu_pd( &gamma(0,1), gamma_0123_1 );
   _mm256_storeu_pd( &gamma(0,2), gamma_0123_2 );
   _mm256_storeu_pd( &gamma(0,3), gamma_0123_3 );
-
-
-  // By performing the computation in many pieces, with all matrices reduced to sizes where they can be 
-  // stored directly in registers, with the A and B matrices 64-byte aligned and packed with zeros to 
-  // guarantee panel size, and using Intel's intrinsics to specify assembly in C,
-  // I was able to achieve massive speedups while maintaining the correctness of my algorithm.
  }
 

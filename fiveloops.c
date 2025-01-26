@@ -1,15 +1,27 @@
 /*
-    This code was written for my class "Programming for Correctness and Performance," which was focused around writing pseudocode algorithms for microkernel linear-algebra operations a la BLAS (https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms), writing logical proofs of their correctness, and then implementing them in code. (This was for the third part).
+    This code was written for my class "Programming for Correctness and Performance," which was focused around writing 
+    pseudocode algorithms for microkernel linear-algebra operations a la BLAS (https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms), 
+    writing logical proofs of their correctness, and then implementing them in code. (This was for the third part).
 
-    The specific algorithm being implemented is double-precision general matrix-matrix multiplication, aka DGEMM (https://www.intel.com/content/www/us/en/docs/onemkl/tutorial-c/2021-4/multiplying-matrices-using-dgemm.html).
+    The specific algorithm being implemented is double-precision general matrix-matrix multiplication, aka DGEMM 
+    (https://www.intel.com/content/www/us/en/docs/onemkl/tutorial-c/2021-4/multiplying-matrices-using-dgemm.html).
     Intel intrinsics are used in the microkernel to specify assembly-level code without actually having to write assembly.
 
-    The point was not just to achieve a correct algorithm but to gradually implement various optimizations, and to see how closely our code could approach the reference implementation (measured in average GFLOPs). With this algorithm I was able to achieve 90-95% of the BLIS implementation's performance (https://github.com/flame/blis), which we were testing against.
+    The point was not just to achieve a correct algorithm but to gradually implement various optimizations, and to see 
+    how closely our code could approach the reference implementation (measured in average GFLOPs). 
+    With this algorithm I was able to achieve 90-95% of the BLIS implementation's performance (https://github.com/flame/blis), 
+    which we were testing against.
 
-    The general structure of the algorithm is to recursively subdivide the matrices into smaller and smaller blocks until all data can fit in the GPRs, after which a partial computation is completed and saved. By further blocking the matrices so that they can fill the L1, L2, and L3 caches (as depicted in https://www.cs.utexas.edu/~flame/laff/pfhp/images/Week3/BLISPictureNoPack.png), we can maximize the CPUs performance by avoiding constant cache overwrites.
+    The general structure of the algorithm is to recursively subdivide the matrices into smaller and smaller blocks 
+    until all data can fit in the GPRs, after which a partial computation is completed and saved. By further blocking 
+    the matrices so that they can fill the L1, L2, and L3 caches (as depicted in 
+    https://www.cs.utexas.edu/~flame/laff/pfhp/images/Week3/BLISPictureNoPack.png), we can maximize the CPU performance 
+    by avoiding constant cache overwrites.
 
-    The code makes reference to five constants: MR, NR, MC, NC, and KC: these are the dimensions by which we divide a matrix into submatrices, one per each of the "five loops".
-    Their exact values are not very relevant, since they were calculated based on our personal CPU L1/2/3 cache sizes, and our number of GPRs.
+    The code makes reference to five constants: MR, NR, MC, NC, and KC: these are the dimensions by which we divide a matrix 
+    into submatrices, one per each of the "five loops".
+    Their exact values are not very relevant, since they were calculated based on our personal CPU L1/2/3 cache sizes, 
+    and our number of GPRs.
 */
 
 /*
@@ -45,7 +57,8 @@ void fiveloops( int m, int n, int k, double *A, int rsA, int csA,
   }
 }
 
-// fourth loop - C is passed in completely, A is split up into KC column-wide chunks, B is buffered into Bt (temporary)
+// fourth loop - C is passed in completely, A is split up into KC column-wide chunks,
+// B is buffered into Bt (temporarily)
 void fourloops( int m, int n, int k, double *A, int rsA, int csA,
        double *B, int rsB, int csB,  double *C, int rsC, int csC )
 
@@ -66,7 +79,8 @@ void fourloops( int m, int n, int k, double *A, int rsA, int csA,
   _mm_free(Bt);
 }
 
-// The following two functions "pack" the submatrix Bt so that it can be accessed contiguously in memory, for increased access speed later
+// The following two functions "pack" the submatrix Bt so that it can be accessed contiguously in memory
+// for increased access speed later
 // A diagram of this process can be seen at https://www.cs.utexas.edu/~flame/laff/pfhp/images/Week3/BLISPicturePack.png
 void packB_KCxNC( int k, int n, double *B, int rsB, int csB, double *Bt )
 
@@ -115,7 +129,8 @@ void threeloops( int m, int n, int k, double *A, int rsA, int csA, double *Bt,  
   _mm_free(At);
 }
 
-// The same packing process is done with matrix A (including padding for matrices with sizes that are not multiples of MR)
+// The same packing process is done with matrix A 
+// (including padding for matrices with sizes that are not multiples of MR)
 void packA_MCxKC( int m, int k, double *A, int rsA, int csA, double *At )
 
 {
@@ -177,7 +192,8 @@ void oneloop( int m, int n, int k, double *At, double *Bt, double *C, int rsC, i
     __m256d alpha_0123_p, beta_p_j;
 
     // We load the current contents of C into our registers
-    // This is what makes the math work out even when subdividing the matrices like this--C can contain a "partial result" that is used later
+    // This is what makes the math work out even when subdividing the matrices like this
+    // C now contains a "partial result" that is reused for later microkernel runs
     gamma_0123_0 = _mm256_loadu_pd( &gamma(0, 0) ) ;
     gamma_0123_1 = _mm256_loadu_pd( &gamma(0, 1) ) ;
     gamma_0123_2 = _mm256_loadu_pd( &gamma(0, 2) ) ;
@@ -213,8 +229,9 @@ void oneloop( int m, int n, int k, double *At, double *Bt, double *C, int rsC, i
   _mm256_storeu_pd( &gamma(0,3), gamma_0123_3 );
 
 
-  // By performing the computation in many pieces, with all matrices reduced to sizes where they can be stored directly in registers,
-  // with the A and B matrices 64-byte aligned and packed with zeros to guarantee panel size, and using Intel's intrinsics to specify assembly in C,
+  // By performing the computation in many pieces, with all matrices reduced to sizes where they can be 
+  // stored directly in registers, with the A and B matrices 64-byte aligned and packed with zeros to 
+  // guarantee panel size, and using Intel's intrinsics to specify assembly in C,
   // I was able to achieve massive speedups while maintaining the correctness of my algorithm.
  }
 

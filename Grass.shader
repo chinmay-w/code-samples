@@ -1,6 +1,7 @@
-// This code snippet is taken from my final project for a Graphics programming class, for which my team chose to implement a "toon" grass shader in Unity HLSL.
-// Specifically, it was written to implement shadow casting. While it took me a long time to determine how to best handle the math involved,
-// the implementation turned out to be really elegant, for both static and dynamic shadows.
+// This code snippet is taken from my final project for a Graphics programming class, for which my team chose to implement a 
+// "toon" grass shader in Unity HLSL. Specifically, it was written to implement shadow casting. 
+// While it took me a long time to determine how to best handle the math involved,
+// the implementation turned out to be really elegant for both static and dynamic shadows.
 
 // I have cut out a lot of boilerplate pragra/include directives
 
@@ -13,7 +14,7 @@ Pass
     HLSLPROGRAM
         float4 fragShader(GeoData g) : SV_Target {
 
-            float4 shadowColor = 1.0f;
+            float4 shadowColor = 1.0f; // vector of 4 floats, '= 1.0f' is shorthand for setting all of them
             #ifdef _MAIN_LIGHT_SHADOWS // global toggle for shadow rendering in the scene
                 VertexPositionInputs input  = (VertexPositionInputs)0;
                 input.positionWS = g.worldPos; // Struct that contains the position of point g
@@ -26,8 +27,9 @@ Pass
 
                 float ambient = 0.25f; // Constant used to simulate ambient lighting of a scene
                 half attenuation = saturate(MainLightRealtimeShadow(shadowCoord) + ambient); 
-                // saturate function wrapper used to clamp between 0 and 1 -- if fully visible then it could have a value of 1.25 for example
-                shadowColor = lerp(0.0f, 1.0f, attenuation); // 
+                // saturate function wrapper used to clamp between 0 and 1
+                // if fully visible then it could have a value of 1.25 for example
+                shadowColor = lerp(0.0f, 1.0f, attenuation); // interpolates the shadow attenuation value for all 4 floats
             #endif
 
             // lerp is used to interpolate between base and tip colors for the gradient
@@ -50,7 +52,8 @@ Pass
             // Since both affect shadows cast in the scene, this pass accounts for that when constructing of the shadow map 
             // _BaseMap and _Base_Color are the texture-map and color of the material
 
-            // Shadow maps are much more performant than dynamic shadow simulation, so they are preferred when an object doesn't move
+            // Shadow maps are much more performant than dynamic shadow simulation
+            // so they are preferred when an object doesn't ever move
             Alpha(SampleAlbedoAlpha(g.uv, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap)).a, _Base_Color, 1.0);
             return 0;
         }

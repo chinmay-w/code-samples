@@ -1,5 +1,16 @@
 /*
-    When working on horror-rhythm video game Zombeats (https://umbresp.itch.io/zombeats), I wanted to add the seeminly-minor feature of a 4-bar count-off that would play before each of the songs in the game. This turned out to be incredibly annoying for multiple reasons. Firstly, at the time our system for mapping out a level over time was tempo-blind (it was expressed purely as a sequence of Zombies that spawn with a given time-offset from the start of the song, rather than abstracted through beats and measures). Secondly, Unity's handling of audio playback is actually quite convoluted, with many of the most common methods / properties being unsuitable for anything requiring precision... like a count off, which needs to be on-beat. So in the process of this seemingly minor addition I ended up heavily refactoring and implementing several global systems. But because they were useful throughout the rest of development, I don't regret it--being able to specify audio timings more precisely helped a lot with timing sound effects, and more precise tempo handling allowed us to implement features later like being able to play the same level at three different speeds more straightforwardly.
+    When working on horror-rhythm video game Zombeats (https://umbresp.itch.io/zombeats), I wanted to add the seeminly-minor 
+    feature of a 4-bar count-off that would play before each of the songs in the game. This turned out to be incredibly annoying 
+    for multiple reasons. Firstly, at the time our system for mapping out a level over time was tempo-blind (it was expressed 
+    purely as a sequence of Zombies that spawn with a given time-offset from the start of the song, rather than abstracted 
+    through beats and measures). 
+    
+    Secondly, Unity's handling of audio playback is actually quite convoluted, with many of the most common methods / properties 
+    being unsuitable for anything requiring precision... like a count off, which needs to be on-beat. So in the process of this 
+    seemingly minor addition I ended up heavily refactoring and implementing several global systems. But because they were 
+    useful throughout the rest of development, I don't regret it--being able to specify audio timings more precisely helped a lot 
+    with timing sound effects, and more precise tempo handling allowed us to implement features later like being able to play 
+    the same level at three different speeds more straightforwardly.
 */
 
 // (I've deleted all the code in the class unrelated to this particular feature)
@@ -49,7 +60,8 @@ public class ZombieSpawner : MonoBehaviour
         songStarted = true;
     }
 
-    // We cannot use Unity's Start OR Awake functions to implement any musical logic because of the stutter caused when loading in all the assets for the level
+    // We cannot use Unity's Start OR Awake functions to implement any musical logic because of the stutter caused 
+    // when loading in all the assets for the level
     // Instead, we created a custom third pass once loading is complete (before that we throw up a loading screen)
     // In 'LoadingBlocker.cs': GameObject.Find("Level").BroadcastMessage("InitAfterLoad"); 
     // which runs InitAfterLoad() on all objects synchronously (if it exists)
@@ -80,7 +92,8 @@ public class ZombieSpawner : MonoBehaviour
             // Unity's AudioSource.PlayScheduled() method plays songs at a far more precise time than either Play() or PlayDelayed()
             // This is because it has time to preload the audio files
             // AudioSettings.dspTime is a far more accurate time measurement than Time.time
-            // Of note - dspTime is not frame-rate dependent, which makes it ideal for synchronizing after the loading screen (when our frame rate can dip)
+            // Of note - dspTime is not frame-rate dependent, which makes it ideal for synchronizing post loading screen 
+            // (which is when our frame rate can dip)
             for (int i = 0; i < COUNT_OFF_REPS; i++) {
                 drumstickSfx[i].PlayScheduled(AudioSettings.dspTime + i * beatLength + GLOBAL_AUDIO_DELAY);
             }

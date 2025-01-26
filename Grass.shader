@@ -2,7 +2,7 @@
 // Specifically, it was written to implement shadow casting. While it took me a long time to determine how to best handle the math involved,
 // the implementation turned out to be really elegant, for both static and dynamic shadows.
 
-// I have cut out a lot of unrelated code and boilerplate pragra/include directives
+// I have cut out a lot of boilerplate pragra/include directives
 
 // Render pass for our grass shader
 Pass

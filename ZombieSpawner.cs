@@ -9,8 +9,8 @@
     being unsuitable for anything requiring precision... like a count off, which needs to be on-beat. So in the process of this 
     seemingly minor addition I ended up heavily refactoring and implementing several global systems. But because they were 
     useful throughout the rest of development, I don't regret it--being able to specify audio timings more precisely helped a lot 
-    with timing sound effects, and more precise tempo handling allowed us to implement features later like being able to play 
-    the same level at three different speeds more straightforwardly.
+    with timing sound effects, and more precise tempo handling allowed us to implement features later (like being able to play 
+    the same level at three different speeds) more straightforwardly.
 */
 
 // (I've deleted all the code in the class unrelated to this particular feature)
